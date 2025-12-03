@@ -1,9 +1,9 @@
 provider "aws" {
-  region = "ap-south-1"
+  region = var.region
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "vyomentum-dp-prod--terraform-bucket"   
+  bucket = var.s3_bucket_name  
 }
 
 resource "aws_s3_bucket_versioning" "terraform_state" {

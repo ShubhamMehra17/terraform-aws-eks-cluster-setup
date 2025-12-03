@@ -31,7 +31,7 @@ variable "private_subnet_cidrs" {
 variable "admin_cidr" {
   type    = string
   description = "Your admin IP/CIDR for kubectl/ssh access"
-  default = "157.49.47.125/32"
+  default = "1.1.1.1/32"
 }
 
 variable "node_instance_types" {
