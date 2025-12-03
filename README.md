@@ -1,157 +1,203 @@
-terraform-aws-eks-cluster-setup
+⭐ Terraform AWS EKS Cluster Setup
 
-This repository contains a production-ready Terraform setup for deploying an Amazon EKS (Elastic Kubernetes Service) cluster with a custom VPC, high-availability subnets, managed node groups, and all required AWS components.
+A fully production-ready Amazon EKS cluster deployed using Terraform with custom VPC, private/public subnets, NAT gateways, node groups, IAM roles, and security best-practices.
 
-The setup includes:
+📘 Table of Contents
 
-Custom VPC with public and private subnets
+Overview
 
-Internet Gateway + NAT Gateway (or use existing NAT GW)
+Architecture
 
-Route tables + associations
+Features
 
-EKS Control Plane
+Terraform Module Structure
 
-EKS Managed Node Group
+Prerequisites
 
-IAM Roles & Policies
+How to Use
 
-OIDC Provider for IAM Roles for Service Accounts (IRSA)
+Components Explained
 
-VPC Endpoints for SSM / EC2Messages / SSMMessages
+Outputs
 
-Security Groups for cluster & worker nodes
+License
 
-Outputs for kubeconfig
+📌 Overview
 
-CloudWatch Log Group (optional)
+This repository contains Terraform code to build a production-grade Amazon EKS cluster with a fully custom VPC, networking, IAM roles, security groups, and node groups.
+It follows AWS-recommended best practices, including private worker nodes and public/private endpoint control.
 
-📌 Architecture Overview
+🏗️ Architecture
 
-This infrastructure provisions:
+High-level design:
 
-1. Custom VPC
+                 ┌──────────────────────────────┐
+                 │        Amazon EKS Control    │
+                 │            Plane (AWS)       │
+                 └───────────────┬──────────────┘
+                                 │
+                   API Server Endpoint (Public/Private)
+                                 │
+─────────────────────────────────┼────────────────────────────────────
+                                 │
+       ┌─────────────────────────┴───────────────────────────┐
+       │                     Custom VPC                       │
+       │  CIDR: 10.0.0.0/16                                   │
+       │                                                      │
+       │   ┌───────────────┐       ┌───────────────┐         │
+       │   │  Public Subnet│       │ Public Subnet │         │
+       │   └───────┬───────┘       └───────┬───────┘         │
+       │           │ IGW                 IGW │               │
+       │   ┌───────▼──────┐       ┌───────▼──────┐         │
+       │   │ NAT Gateway   │       │ NAT Gateway  │         │
+       │   └───────┬──────┘       └───────┬──────┘         │
+       │           │                      │                 │
+       │   ┌───────▼──────────────────────▼──────────────┐  │
+       │   │           Private Subnets (Nodes)            │  │
+       │   │  Worker Node Group + ENIs + EBS Volumes      │  │
+       │   └──────────────────────────────────────────────┘  │
+       │                                                      │
+       └──────────────────────────────────────────────────────┘
 
-CIDR block: 10.0.0.0/16
+🚀 Features
 
-3 Public Subnets (for NAT Gateways or public ALBs)
+✔ Custom VPC with 3 AZ setup
+✔ Private subnets for worker nodes
+✔ Public subnets for NAT Gateways
+✔ IAM roles for EKS cluster & node groups
+✔ Auto-scaling node groups
+✔ EKS OIDC provider for IRSA
+✔ Secure security groups (cluster & nodes)
+✔ VPC Endpoints for SSM (optional)
+✔ EIP-attached NAT gateways
+✔ kubectl config output
+✔ Fully modular and production-ready
 
-3 Private Subnets (for node groups)
-
-Route tables for public & private networks
-
-Internet Gateway for outbound internet on public subnets
-
-2. NAT Gateways
-
-1 or 3 NAT gateways (depending on your configuration)
-
-Allow private subnets to reach the internet for:
-
-Package installation
-
-Pulling container images
-
-SSM connectivity
-
-3. EKS Cluster
-
-Latest stable Kubernetes version (1.30+)
-
-Private + public endpoint access
-
-Control plane security group
-
-4. EKS Managed Node Group
-
-EC2 worker nodes in private subnets
-
-IAM role with required policies
-
-Auto-scaling configuration
-
-5. OIDC Provider
-
-Enables fine-grained IAM permissions for Kubernetes service accounts (IRSA):
-
-Used by external-dns, ALB controller, EBS CSI driver, etc.
-
-6. Security Groups
-
-EKS cluster SG
-
-Node SG allowing:
-
-443 communication to API server
-
-Node-to-node traffic
-
-Cluster-to-node communication
-
-7. VPC Endpoints (Optional but recommended)
-
-SSM & EC2Messages endpoints allow:
-
-SSM agent communication without public internet
-
-Access from private nodes
-
-📁 Repository Structure
+📁 Terraform Module Structure
 .
-├── vpc.tf              # VPC, Subnets, IGW, NAT, route tables
-├── eks.tf              # EKS cluster + node groups
-├── iam.tf              # IAM roles and OIDC provider
-├── sg.tf               # Security groups
-├── variables.tf        # All variables
-├── outputs.tf          # Cluster outputs like kubeconfig
-├── providers.tf        # AWS provider configuration
-└── README.md           # Documentation
+├── vpc.tf
+├── eks.tf
+├── node_groups.tf
+├── iam.tf
+├── sg.tf
+├── outputs.tf
+├── variables.tf
+└── README.md
 
-🚀 Deployment Steps
-1. Initialize Terraform
-terraform init
+📦 Prerequisites
 
-2. Validate the configuration
-terraform validate
+Before deploying:
 
-3. Review the plan
-terraform plan
-
-4. Apply
-terraform apply -auto-approve
-
-📄 Generate Kubeconfig
-
-After apply:
-
-aws eks update-kubeconfig --name <cluster_name> --region <region>
-
-📝 Requirements
-
-Terraform v1.6+
+Terraform ≥ 1.5
 
 AWS CLI configured
 
 kubectl installed
 
-IAM permissions for EKS/VPC/EC2/IAM
+IAM permissions to create EKS, VPC, and IAM roles
 
-📦 Features
+Login to AWS:
 
-Fully automated VPC + EKS + NodeGroup setup
+aws configure
 
-Highly available across 3 AZs
+⚙️ How to Use
+1️⃣ Initialize Terraform
+terraform init
 
-Can integrate with:
+2️⃣ Validate
+terraform validate
 
-ALB Ingress Controller
+3️⃣ Preview changes
+terraform plan
 
-ExternalDNS
+4️⃣ Apply
+terraform apply -auto-approve
 
-Prometheus / Grafana
+5️⃣ Get kubeconfig
+aws eks update-kubeconfig --name <cluster_name> --region <region>
+
+🧠 Components Explained
+🔹 VPC
+
+Isolates the Kubernetes environment
+
+Custom CIDR for pods, nodes, and control plane communication
+
+🔹 Public Subnets
+
+Host NAT Gateways
+
+Allow outbound internet access for private nodes via NAT
+
+🔹 Private Subnets
+
+Host worker nodes
+
+No direct inbound internet exposure
+
+🔹 NAT Gateways
+
+Allow nodes in private subnets to download:
+
+worker AMIs
+
+container images
+
+security patches
+
+EKS bootstrap scripts
+
+🔹 IAM Roles
+
+Cluster Role: allows EKS control plane to manage resources
+
+Node Role: allows nodes to pull container images, join cluster
+
+🔹 EKS OIDC Provider
+
+Enables IRSA (IAM Roles for Service Accounts) so pods can get IAM permissions without using node role.
+
+Example:
+
+AWS Load Balancer Controller
+
+External DNS
 
 EBS CSI Driver
 
-🤝 Contributions
+🔹 Security Groups
 
-Contributions, issues, and PRs are welcome!
+Restrict traffic between nodes and control plane
+
+Critical required port:
+
+Control plane → nodes: TCP 443
+
+Nodes → Control plane: TCP 10250
+
+🔹 ENIs (Elastic Network Interfaces)
+
+Created for:
+
+Worker nodes
+
+Pods using secondary ENI (AWS CNI)
+
+NAT gateways
+
+Each ENI attaches to a subnet and routes traffic
+
+🔹 EIPs (Elastic IPs)
+
+Used by NAT gateways
+
+Provide stable internet-reachable address
+
+📤 Outputs
+
+After deployment, Terraform shows:
+
+Output	Description
+cluster_name	EKS cluster name
+node_group_name	Worker node group name
+kubeconfig_path	Path for kubectl configuration
