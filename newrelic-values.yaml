@@ -1,0 +1,42 @@
+global:
+  licenseKey: "YOUR_LICENSE_KEY"
+  cluster: "eks-prod"
+
+  serviceAccount:
+    create: true
+    name: newrelic-infrastructure
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/newrelic-infra-role"
+
+########################################
+# Infrastructure Agent (DaemonSet)
+########################################
+newrelic-infrastructure:
+  enabled: true
+
+########################################
+# Kube Events Collector
+########################################
+nri-kube-events:
+  enabled: true
+
+########################################
+# Metadata Injection (used for logs & APM)
+########################################
+nri-metadata-injection:
+  enabled: true
+
+########################################
+# Prometheus Auto-Scraping
+########################################
+nri-prometheus:
+  enabled: true
+  lowDataMode: false
+
+########################################
+# Logging (FluentBit)
+########################################
+newrelic-logging:
+  enabled: true
+  fluentBit:
+    enabled: true

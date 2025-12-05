@@ -1,161 +1,250 @@
 ⭐ Terraform AWS EKS Cluster Setup
 
-A fully production-ready Amazon EKS cluster deployed using Terraform with custom VPC, private/public subnets, NAT gateways, node groups, IAM roles, and security best-practices.
+A fully production-ready Amazon EKS cluster deployed using Terraform with a custom VPC, private/public subnets, NAT gateways, node groups, IAM roles, and industry-standard security practices.
 
 📘 Table of Contents
 
-Overview
+1. Overview
 
-Architecture
+2. Architecture
 
-Features
+3. Features
 
-Terraform Module Structure
+4. Terraform Module Structure
 
-Prerequisites
+5. Prerequisites
 
-How to Use
+6. How to Use
 
-Components Explained
+7. Components Explained
 
-Outputs
+8. New Relic Kubernetes Observability
 
-License
+9. Outputs
 
-📌 Overview
+10. License
 
-This repository contains Terraform code to build a production-grade Amazon EKS cluster with a fully custom VPC, networking, IAM roles, security groups, and node groups.
-It follows AWS-recommended best practices, including private worker nodes and public/private endpoint control.
+1️⃣ Overview
 
+This repository contains Terraform code to build a production-grade Amazon EKS cluster with:
 
-🚀 Features
+Fully custom VPC
 
-✔ Custom VPC with 3 AZ setup
+Secure private subnets
+
+NAT Gateways
+
+IAM roles & IRSA
+
+EKS-managed node groups
+
+Best-practice Kubernetes networking
+
+The implementation follows AWS-recommended architectural standards.
+
+2️⃣ Architecture
+
+(Optional — I can generate a diagram for you.)
+
+3️⃣ Features
+
+✔ Custom VPC with 3 AZ support
 ✔ Private subnets for worker nodes
-✔ Public subnets for NAT Gateways
-✔ IAM roles for EKS cluster & node groups
+✔ Public subnets hosting NAT Gateways
+✔ IAM roles for EKS control plane & nodes
+✔ IRSA enabled for pod-level IAM permissions
 ✔ Auto-scaling node groups
-✔ EKS OIDC provider for IRSA
-✔ Secure security groups (cluster & nodes)
-✔ VPC Endpoints for SSM (optional)
-✔ EIP-attached NAT gateways
-✔ kubectl config output
+✔ VPC endpoints for SSM (optional)
+✔ NAT gateways with EIP
+✔ kubeconfig output
 ✔ Fully modular and production-ready
 
-📦 Prerequisites
+4️⃣ Terraform Module Structure
+
+(Add your folder/module structure here if needed.)
+
+5️⃣ Prerequisites
 
 Before deploying:
 
 Terraform ≥ 1.5
 
-AWS CLI configured
-
-kubectl installed
-
-IAM permissions to create EKS, VPC, and IAM roles
-
-Login to AWS:
+AWS CLI configured:
 
 aws configure
 
-⚙️ How to Use
-1️⃣ Initialize Terraform
+
+kubectl installed
+
+IAM permissions to create VPC, IAM, and EKS resources
+
+6️⃣ How to Use
+1. Initialize Terraform
 terraform init
 
-2️⃣ Validate
+2. Validate
 terraform validate
 
-3️⃣ Preview changes
+3. Preview Infrastructure
 terraform plan
 
-4️⃣ Apply
+4. Apply Infrastructure
 terraform apply -auto-approve
 
-5️⃣ Get kubeconfig
+5. Update kubeconfig
 aws eks update-kubeconfig --name <cluster_name> --region <region>
 
-🧠 Components Explained
+7️⃣ Components Explained
 🔹 VPC
 
-Isolates the Kubernetes environment
-
-Custom CIDR for pods, nodes, and control plane communication
+Provides isolated networking for EKS, including CIDRs for nodes, pods, and control plane communication.
 
 🔹 Public Subnets
 
-Host NAT Gateways
-
-Allow outbound internet access for private nodes via NAT
+Used for NAT Gateways enabling outbound internet access for private nodes.
 
 🔹 Private Subnets
 
-Host worker nodes
-
-No direct inbound internet exposure
+Securely host worker nodes; no direct inbound internet access.
 
 🔹 NAT Gateways
 
-Allow nodes in private subnets to download:
-
-worker AMIs
-
-container images
-
-security patches
-
-EKS bootstrap scripts
+Ensure nodes can pull container images, install patches, and bootstrap EKS components.
 
 🔹 IAM Roles
 
-Cluster Role: allows EKS control plane to manage resources
+Cluster Role: Allows EKS control plane to manage AWS infrastructure
 
-Node Role: allows nodes to pull container images, join cluster
+Node Role: Allows worker nodes to interact with AWS services
 
-🔹 EKS OIDC Provider
+IRSA Roles: Secure pod-level AWS permission model
 
-Enables IRSA (IAM Roles for Service Accounts) so pods can get IAM permissions without using node role.
+🔹 OIDC Provider
 
-Example:
-
-AWS Load Balancer Controller
-
-External DNS
-
-EBS CSI Driver
+Configured via Terraform to support IRSA-enabled Kubernetes workloads.
 
 🔹 Security Groups
 
-Restrict traffic between nodes and control plane
+Restrict traffic between nodes & control plane. Key ports include:
 
-Critical required port:
+Control Plane → Nodes: TCP 443
 
-Control plane → nodes: TCP 443
+Nodes → Control Plane: TCP 10250
 
-Nodes → Control plane: TCP 10250
+🔹 ENIs
 
-🔹 ENIs (Elastic Network Interfaces)
+Elastic network interfaces used for nodes, pods (AWS CNI), and NAT Gateways.
 
-Created for:
+🔹 EIPs
 
-Worker nodes
+Attached to NAT Gateways for stable outbound connectivity.
 
-Pods using secondary ENI (AWS CNI)
+🟣 8️⃣ New Relic Kubernetes Observability
 
-NAT gateways
+Enhance your EKS cluster with full-stack observability using New Relic.
 
-Each ENI attaches to a subnet and routes traffic
+📦 Prerequisites for New Relic Integration
+✔ New Relic Account
 
-🔹 EIPs (Elastic IPs)
+Create an account at:
+https://one.newrelic.com
 
-Used by NAT gateways
+✔ New Relic License Key
 
-Provide stable internet-reachable address
+Found under:
+Account Settings → API Keys → License Key
 
-📤 Outputs
+Add this inside newrelic-values.yaml:
 
-After deployment, Terraform shows:
+global:
+  licenseKey: "<YOUR_LICENSE_KEY>"
 
-Output	Description
-cluster_name	EKS cluster name
-node_group_name	Worker node group name
-kubeconfig_path	Path for kubectl configuration
+✔ IRSA Role Created via Terraform
+
+This project already configures:
+
+EKS OIDC Provider
+
+IAM Role for New Relic Infrastructure Agent
+
+ServiceAccount annotation
+
+IRSA annotation inside newrelic-values.yaml:
+
+serviceAccount:
+  create: false
+  name: newrelic-infrastructure
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::<ACCOUNT_ID>:role/newrelic-infra-role
+
+✔ Helm Installed
+helm version
+
+🛠️ Installation Steps
+1. Add New Relic Helm Repo
+helm repo add newrelic https://helm-charts.newrelic.com
+
+2. Update Repo Index
+helm repo update
+
+3. Create Namespace
+kubectl create namespace newrelic 
+
+4. Install New Relic Bundle
+helm upgrade --install newrelic-bundle newrelic/nri-bundle \
+  --namespace newrelic \
+  --values newrelic-values.yaml \
+  --timeout 10m
+
+
+This deploys:
+
+Infrastructure Agent
+
+Prometheus (OpenMetrics) Scraper
+
+Metadata Injection Webhook
+
+Kubernetes Events Collector
+
+FluentBit Logging Integration
+
+💡 Note:
+Modern New Relic does not use legacy KSM.
+Prometheus (nri-prometheus) provides all workload & state metrics.
+
+🔍 Verify Installation
+kubectl get pods -n newrelic
+
+
+Expected Running Pods:
+
+newrelic-infra-*
+
+newrelic-nri-prometheus-*
+
+newrelic-nri-kube-events-*
+
+newrelic-nri-metadata-injection-*
+
+newrelic-newrelic-logging-*
+
+Your cluster will appear under:
+
+New Relic → Infrastructure → Kubernetes
+
+9️⃣ Outputs
+
+This module exports:
+
+VPC ID
+
+Subnet IDs
+
+NAT Gateway EIPs
+
+EKS cluster endpoint
+
+IAM role ARNs for IRSA workloads
+
+kubeconfig authentication
