@@ -44,7 +44,7 @@ The implementation follows AWS-recommended architectural standards.
 
 2️⃣ Architecture
 
-(Optional — I can generate a diagram for you.)
+
 
 3️⃣ Features
 
@@ -61,7 +61,29 @@ The implementation follows AWS-recommended architectural standards.
 
 4️⃣ Terraform Module Structure
 
-(Add your folder/module structure here if needed.)
+The project is organized into clear, modular Terraform files that separate networking, IAM, EKS, and provider configuration for better readability and maintainability.
+
+.
+├── .terraform/                     # Terraform internal cache directory
+├── terraform-backend-creation/     # Backend setup for S3 + DynamoDB (optional)
+│
+├── .gitignore                      # Git ignored files
+├── .terraform.lock.hcl             # Dependency lock file
+├── eks-prod-setup.out              # Optional: provisioning logs
+├── eks-prod.out                    # Optional: cluster outputs
+│
+├── provider.tf                     # AWS provider + backend configuration
+├── version.tf                      # Provider and Terraform version constraints
+├── var.tf                          # Variable definitions
+├── vpc.tf                          # Custom VPC, subnets, IGW, NAT gateways
+├── sg.tf                           # Security groups for nodes, control plane, ALB
+├── iam.tf                          # IAM roles, policies, IRSA configuration
+├── eks.tf                          # EKS cluster, node groups, OIDC provider
+│
+├── newrelic-values.yaml            # Helm values for New Relic observability
+│
+└── README.md                       # Project documentation
+
 
 5️⃣ Prerequisites
 
