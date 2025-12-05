@@ -83,15 +83,15 @@ The project is organized into clear, modular Terraform files that separate netwo
 Before deploying:
 
 
-Terraform ≥ 1.5
+   Terraform ≥ 1.5
 
 AWS CLI configured:
 
 
-aws configure
+   aws configure
 
 
-kubectl installed
+   kubectl installed
 
 
 IAM permissions to create VPC, IAM, and EKS resources
@@ -100,85 +100,85 @@ IAM permissions to create VPC, IAM, and EKS resources
 
 1. Initialize Terraform : 
 
-terraform init
+    terraform init
 
 2. Validate :
 
-terraform validate
+    terraform validate
 
 3. Preview Infrastructure :
 
-terraform plan
+    terraform plan
 
 4. Apply Infrastructure : 
 
-terraform apply -auto-approve
+    terraform apply -auto-approve
 
 5. Update kubeconfig : 
 
-aws eks update-kubeconfig --name <cluster_name> --region <region>
+    aws eks update-kubeconfig --name <cluster_name> --region <region>
 
 **7️⃣ Components Explained**
 
 
 🔹 VPC
 
-Provides isolated networking for EKS, including CIDRs for nodes, pods, and control plane communication.
+   Provides isolated networking for EKS, including CIDRs for nodes, pods, and control plane communication.
 
 
 🔹 Public Subnets
 
-Used for NAT Gateways enabling outbound internet access for private nodes.
+   Used for NAT Gateways enabling outbound internet access for private nodes.
 
 
 🔹 Private Subnets
 
 
-Securely host worker nodes; no direct inbound internet access.
+   Securely host worker nodes; no direct inbound internet access.
 
 
 🔹 NAT Gateways
 
 
-Ensure nodes can pull container images, install patches, and bootstrap EKS components.
+   Ensure nodes can pull container images, install patches, and bootstrap EKS components.
 
 
 🔹 IAM Roles
 
 
-Cluster Role: Allows EKS control plane to manage AWS infrastructure
+   Cluster Role: Allows EKS control plane to manage AWS infrastructure
 
-Node Role: Allows worker nodes to interact with AWS services
+   Node Role: Allows worker nodes to interact with AWS services
 
-IRSA Roles: Secure pod-level AWS permission model
+   IRSA Roles: Secure pod-level AWS permission model
 
 
 🔹 OIDC Provider
 
 
-Configured via Terraform to support IRSA-enabled Kubernetes workloads.
+   Configured via Terraform to support IRSA-enabled Kubernetes workloads.
 
 
 🔹 Security Groups
 
 
-Restrict traffic between nodes & control plane. Key ports include:
+   Restrict traffic between nodes & control plane. Key ports include:
 
-Control Plane → Nodes: TCP 443
+   Control Plane → Nodes: TCP 443
 
-Nodes → Control Plane: TCP 10250
+   Nodes → Control Plane: TCP 10250
 
 
 🔹 ENIs
 
 
-Elastic network interfaces used for nodes, pods (AWS CNI), and NAT Gateways.
+   Elastic network interfaces used for nodes, pods (AWS CNI), and NAT Gateways.
 
 
 🔹 EIPs
 
 
-Attached to NAT Gateways for stable outbound connectivity.
+   Attached to NAT Gateways for stable outbound connectivity.
 
 
 **🟣 8️⃣ New Relic Kubernetes Observability**
@@ -202,14 +202,14 @@ https://one.newrelic.com
 
 **Found under:**
 
-Account Settings → API Keys → License Key
+  Account Settings → API Keys → License Key
 
 
 **Add this inside newrelic-values.yaml:**
 
 
-global:
-  licenseKey: "<YOUR_LICENSE_KEY>"
+  global:
+    licenseKey: "<YOUR_LICENSE_KEY>"
 
 
 **✔ IRSA Role Created via Terraform**
@@ -243,23 +243,23 @@ helm version
 **🛠️ Installation Steps**
 1. Add New Relic Helm Repo : 
 
-helm repo add newrelic https://helm-charts.newrelic.com
+    helm repo add newrelic https://helm-charts.newrelic.com
 
 
 2. Update Repo Index : 
 
-helm repo update
+    helm repo update
 
 3. Create Namespace : 
 
-kubectl create namespace newrelic 
+    kubectl create namespace newrelic 
 
 4. Install New Relic Bundle : 
 
-helm upgrade --install newrelic-bundle newrelic/nri-bundle \
-  --namespace newrelic \
-  --values newrelic-values.yaml \
-  --timeout 10m
+    helm upgrade --install newrelic-bundle newrelic/nri-bundle \
+      --namespace newrelic \
+      --values newrelic-values.yaml \
+      --timeout 10m
 
 
 **This deploys:**
